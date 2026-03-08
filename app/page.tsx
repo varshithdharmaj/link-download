@@ -28,7 +28,7 @@ export default function Home() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to extract media");
+        throw new Error(data.error || `Server responded with ${response.status}: Failed to extract media`);
       }
 
       setResult(data);
@@ -67,7 +67,7 @@ export default function Home() {
           Download <span className="text-gradient-accent">Anything.</span>
         </h1>
         <p style={{ color: "var(--text-secondary)", fontSize: "clamp(1rem, 3vw, 1.125rem)", maxWidth: "600px", margin: "0 auto", padding: "0 1rem" }}>
-          Paste a link from YouTube, Twitter, TikTok, or anywhere else. We'll extract the highest quality video or image instantly.
+          Paste a link from YouTube, Twitter, TikTok, or any valid URL. We'll extract the media or provide a direct download instantly.
         </p>
       </motion.div>
 
@@ -87,7 +87,7 @@ export default function Home() {
             type="url"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder="Paste your link here (e.g. https://youtube.com/...)"
+            placeholder="Paste your link here (e.g. YouTube, Twitter, or any direct URL)"
             className="glass-input"
             style={{ paddingLeft: "3rem" }}
             required
