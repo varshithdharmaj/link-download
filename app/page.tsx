@@ -39,6 +39,25 @@ export default function Home() {
     }
   };
 
+  const handleDownloadFile = async (fileUrl: string, filename: string) => {
+    try {
+      const response = await fetch(fileUrl);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename || 'download';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error("Download failed:", err);
+      // Fallback to direct link if blob fetch fails (CORS etc)
+      window.open(fileUrl, '_blank');
+    }
+  };
+
   return (
     <main className="container" style={{ minHeight: "100vh", padding: "4rem 2rem", display: "flex", flexDirection: "column", alignItems: "center" }}>
       {/* Ambient Animated Background */}
@@ -178,7 +197,33 @@ export default function Home() {
             className="glass-panel"
             style={{ marginTop: "2rem", width: "100%", maxWidth: "700px", overflow: "hidden" }}
           >
-            {result.thumbnail && (
+            {(result.formats?.find((f: any) => f.type === 'video') || (result.type === 'video' && result.url)) && (
+              <div style={{ width: "100%", padding: "1.5rem 2rem 0" }}>
+                <video
+                  controls
+                  className="glass-panel"
+                  style={{ width: "100%", borderRadius: "12px", background: "#000", maxHeight: "400px" }}
+                  poster={result.thumbnail}
+                >
+                  <source src={result.formats?.find((f: any) => f.type === 'video')?.url || result.url} type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+            )}
+
+            {(result.formats?.find((f: any) => f.type === 'audio') && !result.formats?.find((f: any) => f.type === 'video')) && (
+              <div style={{ width: "100%", padding: "1.5rem 2rem 0" }}>
+                <audio
+                  controls
+                  style={{ width: "100%" }}
+                >
+                  <source src={result.formats?.find((f: any) => f.type === 'audio')?.url} type="audio/mpeg" />
+                  Your browser does not support the audio element.
+                </audio>
+              </div>
+            )}
+
+            {result.thumbnail && !result.formats?.find((f: any) => f.type === 'video') && (
               <div style={{ width: "100%", aspectRatio: "16/9", position: "relative", overflow: "hidden", background: "#000" }}>
                 <img
                   src={result.thumbnail}
@@ -216,12 +261,10 @@ export default function Home() {
                       </h4>
                       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem" }}>
                         {filtered.map((format: any, idx: number) => (
-                          <a
+                          <button
                             key={idx}
-                            href={format.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.05)", borderRadius: "12px", padding: "1rem", textDecoration: "none", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "1rem", transition: "all 0.2s ease" }}
+                            onClick={() => handleDownloadFile(format.url, `${result.title || 'media'}-${format.quality || idx}.${format.ext}`)}
+                            style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.05)", borderRadius: "12px", padding: "1rem", textDecoration: "none", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "1rem", transition: "all 0.2s ease", cursor: "pointer", textAlign: "left", width: "100%" }}
                             onMouseOver={(e) => {
                               (e.currentTarget as HTMLElement).style.background = "rgba(0,0,0,0.06)";
                               (e.currentTarget as HTMLElement).style.borderColor = "var(--accent-primary)";
@@ -240,7 +283,7 @@ export default function Home() {
                                 {format.ext} {format.filesize ? `• ${(format.filesize / 1024 / 1024).toFixed(1)} MB` : ''}
                               </div>
                             </div>
-                          </a>
+                          </button>
                         ))}
                       </div>
                     </div>
@@ -249,16 +292,14 @@ export default function Home() {
 
                 {(!result.formats || result.formats.length === 0) && result.url && (
                   <div style={{ textAlign: "center" }}>
-                    <a
-                      href={result.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button
+                      onClick={() => handleDownloadFile(result.url, `${result.title || 'media'}.${result.ext || 'mp4'}`)}
                       className="btn-primary"
-                      style={{ textDecoration: "none", display: "inline-flex" }}
+                      style={{ textDecoration: "none", display: "inline-flex", cursor: "pointer" }}
                     >
                       <Download size={20} />
                       Download Result
-                    </a>
+                    </button>
                   </div>
                 )}
               </div>
@@ -267,7 +308,7 @@ export default function Home() {
         )}
       </AnimatePresence>
       <footer style={{ marginTop: "4rem", padding: "2rem", borderTop: "1px solid rgba(0,0,0,0.05)", width: "100%", textAlign: "center", color: "var(--text-secondary)", fontSize: "0.875rem" }}>
-        <p>© 2026 Media Downloader • Version 1.1.5</p>
+        <p>© 2026 Media Downloader • Version 1.1.6</p>
       </footer>
     </main>
   );
