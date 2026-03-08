@@ -71,49 +71,86 @@ export default function Home() {
         </p>
       </motion.div>
 
-      <motion.form
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.6 }}
-        className="glass-panel"
-        style={{ width: "100%", maxWidth: "700px", padding: "2rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}
-        onSubmit={handleDownload}
+        style={{ width: "100%", maxWidth: "700px", display: "flex", flexDirection: "column", gap: "1.5rem" }}
       >
-        <div style={{ position: "relative" }}>
-          <div style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "var(--text-secondary)" }}>
-            <LinkIcon size={20} />
-          </div>
-          <input
-            type="url"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="Paste your link here (e.g. YouTube, Twitter, or any direct URL)"
-            className="glass-input"
-            style={{ paddingLeft: "3rem" }}
-            required
-            disabled={isLoading}
-          />
+        {/* Platform Selection Tabs (Visual Only) */}
+        <div style={{ display: "flex", justifyContent: "center", gap: "0.5rem", marginBottom: "-0.5rem" }}>
+          {[
+            { id: 'insta', label: 'Instagram', color: '#E4405F' },
+            { id: 'yt', label: 'YouTube', color: '#FF0000' },
+            { id: 'tt', label: 'TikTok', color: '#000000' },
+            { id: 'tw', label: 'Twitter', color: '#1DA1F2' },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => {
+                if (tab.id === 'insta') setUrl("https://www.instagram.com/p/...");
+                else if (tab.id === 'yt') setUrl("https://www.youtube.com/watch?v=...");
+              }}
+              className="glass-panel"
+              style={{
+                padding: "0.5rem 1rem",
+                fontSize: "0.75rem",
+                fontWeight: 600,
+                cursor: "pointer",
+                background: url.includes(tab.label.toLowerCase()) ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.4)",
+                borderColor: url.includes(tab.label.toLowerCase()) ? tab.color : "rgba(0,0,0,0.05)",
+                color: url.includes(tab.label.toLowerCase()) ? tab.color : "var(--text-secondary)",
+                transition: "all 0.2s"
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
-        <button
-          type="submit"
-          className="btn-primary"
-          style={{ width: "100%" }}
-          disabled={isLoading || !url.trim()}
+        <form
+          className="glass-panel"
+          style={{ padding: "2rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}
+          onSubmit={handleDownload}
         >
-          {isLoading ? (
-            <>
-              <Loader2 className="animate-spin" size={20} />
-              Extracting Magic...
-            </>
-          ) : (
-            <>
-              <Download size={20} />
-              Extract Media
-            </>
-          )}
-        </button>
-      </motion.form>
+          <div style={{ position: "relative" }}>
+            <div style={{ position: "absolute", left: "1rem", top: "50%", transform: "translateY(-50%)", color: "var(--text-secondary)" }}>
+              <LinkIcon size={20} />
+            </div>
+            <input
+              type="url"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="Paste Instagram Reel, YouTube Link, or any URL..."
+              className="glass-input"
+              style={{ paddingLeft: "3rem" }}
+              required
+              disabled={isLoading}
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="btn-primary"
+            style={{ width: "100%" }}
+            disabled={isLoading || !url.trim()}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="animate-spin" size={20} />
+                {url.toLowerCase().includes('instagram') ? 'Connecting to Instagram...' :
+                  url.toLowerCase().includes('youtube') ? 'Fetching YouTube Data...' :
+                    'Extracting Media Magic...'}
+              </>
+            ) : (
+              <>
+                <Download size={20} />
+                Download Media
+              </>
+            )}
+          </button>
+        </form>
+      </motion.div>
 
       <AnimatePresence mode="wait">
         {error && (
@@ -163,46 +200,66 @@ export default function Home() {
             )}
 
             <div style={{ padding: "2rem" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem" }}>
-                {result.formats?.map((format: any, idx: number) => (
-                  <a
-                    key={idx}
-                    href={format.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.05)", borderRadius: "12px", padding: "1rem", textDecoration: "none", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "1rem", transition: "all 0.2s ease" }}
-                    onMouseOver={(e) => {
-                      (e.currentTarget as HTMLElement).style.background = "rgba(0,0,0,0.06)";
-                      (e.currentTarget as HTMLElement).style.borderColor = "var(--accent-primary)";
-                    }}
-                    onMouseOut={(e) => {
-                      (e.currentTarget as HTMLElement).style.background = "rgba(0,0,0,0.03)";
-                      (e.currentTarget as HTMLElement).style.borderColor = "rgba(0,0,0,0.05)";
-                    }}
-                  >
-                    <div style={{ background: "rgba(99, 102, 241, 0.2)", color: "var(--accent-primary)", padding: "0.75rem", borderRadius: "10px" }}>
-                      {format.type === 'video' ? <PlayCircle size={24} /> : <ImageIcon size={24} />}
-                    </div>
-                    <div>
-                      <div style={{ fontWeight: 600, fontSize: "1rem" }}>{format.quality || "Standard"}</div>
-                      <div style={{ color: "var(--text-secondary)", fontSize: "0.75rem", textTransform: "uppercase" }}>
-                        {format.ext} {format.filesize ? `• ${(format.filesize / 1024 / 1024).toFixed(1)} MB` : ''}
+              <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+                {/* Grouping by Video/Audio/Image */}
+                {['video', 'audio', 'image', 'file'].map((category) => {
+                  const filtered = result.formats?.filter((f: any) => f.type === category);
+                  if (!filtered || filtered.length === 0) return null;
+
+                  return (
+                    <div key={category}>
+                      <h4 style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-secondary)", marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                        {category === 'video' && <PlayCircle size={14} />}
+                        {category === 'audio' && <Loader2 size={14} />}
+                        {category === 'image' && <ImageIcon size={14} />}
+                        {category} Results
+                      </h4>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem" }}>
+                        {filtered.map((format: any, idx: number) => (
+                          <a
+                            key={idx}
+                            href={format.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.05)", borderRadius: "12px", padding: "1rem", textDecoration: "none", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "1rem", transition: "all 0.2s ease" }}
+                            onMouseOver={(e) => {
+                              (e.currentTarget as HTMLElement).style.background = "rgba(0,0,0,0.06)";
+                              (e.currentTarget as HTMLElement).style.borderColor = "var(--accent-primary)";
+                            }}
+                            onMouseOut={(e) => {
+                              (e.currentTarget as HTMLElement).style.background = "rgba(0,0,0,0.03)";
+                              (e.currentTarget as HTMLElement).style.borderColor = "rgba(0,0,0,0.05)";
+                            }}
+                          >
+                            <div style={{ background: "rgba(99, 102, 241, 0.1)", color: "var(--accent-primary)", padding: "0.75rem", borderRadius: "10px" }}>
+                              {format.type === 'video' ? <PlayCircle size={24} /> : (format.type === 'image' ? <ImageIcon size={24} /> : <Download size={24} />)}
+                            </div>
+                            <div>
+                              <div style={{ fontWeight: 600, fontSize: "1rem" }}>{format.quality || "Original"}</div>
+                              <div style={{ color: "var(--text-secondary)", fontSize: "0.75rem", textTransform: "uppercase" }}>
+                                {format.ext} {format.filesize ? `• ${(format.filesize / 1024 / 1024).toFixed(1)} MB` : ''}
+                              </div>
+                            </div>
+                          </a>
+                        ))}
                       </div>
                     </div>
-                  </a>
-                ))}
+                  );
+                })}
 
                 {(!result.formats || result.formats.length === 0) && result.url && (
-                  <a
-                    href={result.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn-primary"
-                    style={{ textDecoration: "none" }}
-                  >
-                    <Download size={20} />
-                    Download File
-                  </a>
+                  <div style={{ textAlign: "center" }}>
+                    <a
+                      href={result.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-primary"
+                      style={{ textDecoration: "none", display: "inline-flex" }}
+                    >
+                      <Download size={20} />
+                      Download Result
+                    </a>
+                  </div>
                 )}
               </div>
             </div>
@@ -210,7 +267,7 @@ export default function Home() {
         )}
       </AnimatePresence>
       <footer style={{ marginTop: "4rem", padding: "2rem", borderTop: "1px solid rgba(0,0,0,0.05)", width: "100%", textAlign: "center", color: "var(--text-secondary)", fontSize: "0.875rem" }}>
-        <p>© 2026 Media Downloader • Version 1.1.4</p>
+        <p>© 2026 Media Downloader • Version 1.1.5</p>
       </footer>
     </main>
   );
