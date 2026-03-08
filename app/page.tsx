@@ -197,52 +197,77 @@ export default function Home() {
             className="glass-panel"
             style={{ marginTop: "2rem", width: "100%", maxWidth: "700px", overflow: "hidden" }}
           >
-            {(result.formats?.find((f: any) => f.type === 'video') || (result.type === 'video' && result.url)) && (
-              <div style={{ width: "100%", padding: "1.5rem 2rem 0" }}>
-                <video
-                  controls
-                  className="glass-panel"
-                  style={{ width: "100%", borderRadius: "12px", background: "#000", maxHeight: "400px" }}
-                  poster={result.thumbnail}
-                >
-                  <source src={result.formats?.find((f: any) => f.type === 'video')?.url || result.url} type="video/mp4" />
-                  Your browser does not support the video tag.
-                </video>
-              </div>
-            )}
+            {/* Integrated Media Player / Preview */}
+            {(() => {
+              const videoExts = ['mp4', 'webm', 'mov', 'm4v'];
+              const audioExts = ['mp3', 'wav', 'ogg', 'm4a', 'aac'];
 
-            {(result.formats?.find((f: any) => f.type === 'audio') && !result.formats?.find((f: any) => f.type === 'video')) && (
-              <div style={{ width: "100%", padding: "1.5rem 2rem 0" }}>
-                <audio
-                  controls
-                  style={{ width: "100%" }}
-                >
-                  <source src={result.formats?.find((f: any) => f.type === 'audio')?.url} type="audio/mpeg" />
-                  Your browser does not support the audio element.
-                </audio>
-              </div>
-            )}
+              const videoFormat = result.formats?.find((f: any) => f.type === 'video' || videoExts.includes(f.ext?.toLowerCase()));
+              const audioFormat = result.formats?.find((f: any) => f.type === 'audio' || audioExts.includes(f.ext?.toLowerCase()));
 
-            {result.thumbnail && !result.formats?.find((f: any) => f.type === 'video') && (
-              <div style={{ width: "100%", aspectRatio: "16/9", position: "relative", overflow: "hidden", background: "#000" }}>
-                <img
-                  src={result.thumbnail}
-                  alt={result.title || "Media Preview"}
-                  style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.8 }}
-                />
-                <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", background: "linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)" }} />
+              const isVideo = !!videoFormat || result.type === 'video';
+              const isAudio = !!audioFormat || result.type === 'audio';
+              const previewUrl = videoFormat?.url || audioFormat?.url || result.url;
 
-                <div style={{ position: "absolute", bottom: "1.5rem", left: "1.5rem", right: "1.5rem" }}>
-                  <h3 style={{ fontSize: "1.5rem", fontWeight: 700, color: "white", marginBottom: "0.5rem", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                    {result.title || "Extracted Media"}
-                  </h3>
-                  <p style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.875rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                    <CheckCircle2 size={16} />
-                    Ready for download
-                  </p>
-                </div>
-              </div>
-            )}
+              if (isVideo) {
+                return (
+                  <div style={{ width: "100%", padding: "1.5rem 2rem 0" }}>
+                    <h4 style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", color: "var(--text-secondary)", marginBottom: "0.75rem" }}>Video Preview</h4>
+                    <video
+                      controls
+                      className="glass-panel"
+                      style={{ width: "100%", borderRadius: "12px", background: "#000", maxHeight: "400px", boxShadow: "0 8px 32px rgba(0,0,0,0.2)" }}
+                      poster={result.thumbnail}
+                      key={previewUrl}
+                    >
+                      <source src={previewUrl} />
+                      Your browser does not support the video tag.
+                    </video>
+                  </div>
+                );
+              }
+
+              if (isAudio) {
+                return (
+                  <div style={{ width: "100%", padding: "1.5rem 2rem 0" }}>
+                    <h4 style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", color: "var(--text-secondary)", marginBottom: "0.75rem" }}>Audio Preview</h4>
+                    <audio
+                      controls
+                      style={{ width: "100%" }}
+                      key={previewUrl}
+                    >
+                      <source src={previewUrl} />
+                      Your browser does not support the audio element.
+                    </audio>
+                  </div>
+                );
+              }
+
+              if (result.thumbnail) {
+                return (
+                  <div style={{ width: "100%", aspectRatio: "16/9", position: "relative", overflow: "hidden", background: "#000" }}>
+                    <img
+                      src={result.thumbnail}
+                      alt={result.title || "Media Preview"}
+                      style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.8 }}
+                    />
+                    <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", background: "linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)" }} />
+
+                    <div style={{ position: "absolute", bottom: "1.5rem", left: "1.5rem", right: "1.5rem" }}>
+                      <h3 style={{ fontSize: "1.5rem", fontWeight: 700, color: "white", marginBottom: "0.5rem", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                        {result.title || "Extracted Media"}
+                      </h3>
+                      <p style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.875rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                        <CheckCircle2 size={16} />
+                        Ready to save
+                      </p>
+                    </div>
+                  </div>
+                );
+              }
+
+              return null;
+            })()}
 
             <div style={{ padding: "2rem" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
@@ -308,7 +333,7 @@ export default function Home() {
         )}
       </AnimatePresence>
       <footer style={{ marginTop: "4rem", padding: "2rem", borderTop: "1px solid rgba(0,0,0,0.05)", width: "100%", textAlign: "center", color: "var(--text-secondary)", fontSize: "0.875rem" }}>
-        <p>© 2026 Media Downloader • Version 1.1.6</p>
+        <p>© 2026 Media Downloader • Version 1.1.7</p>
       </footer>
     </main>
   );
