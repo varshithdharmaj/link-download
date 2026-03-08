@@ -209,6 +209,9 @@ export default function Home() {
           </motion.div>
         )}
       </AnimatePresence>
+      <footer style={{ marginTop: "4rem", padding: "2rem", borderTop: "1px solid rgba(0,0,0,0.05)", width: "100%", textAlign: "center", color: "var(--text-secondary)", fontSize: "0.875rem" }}>
+        <p>© 2026 Media Downloader • Version 1.1.2</p>
+      </footer>
     </main>
   );
 }
