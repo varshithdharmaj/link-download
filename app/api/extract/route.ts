@@ -21,7 +21,6 @@ export async function POST(req: Request) {
             const contentType = headResponse.headers['content-type'];
             const contentLength = headResponse.headers['content-length'];
 
-            // If it's a direct media file or a known downloadable type, we can offer it directly
             if (contentType && (
                 contentType.startsWith('video/') ||
                 contentType.startsWith('audio/') ||
@@ -44,10 +43,58 @@ export async function POST(req: Request) {
                 });
             }
         } catch (e) {
-            console.log("Head check failed, proceeding to youtube-dl", e);
+            console.log("Head check failed, proceeding to extractors");
         }
 
-        // 2. Try specialized extraction with youtube-dl
+        // 2. Try Cobalt API for Social Media (Instagram, Twitter, TikTok, etc.)
+        try {
+            const cobaltResponse = await axios.post('https://api.cobalt.tools/api/json', {
+                url: url,
+                vQuality: 'max',
+                filenamePattern: 'pretty',
+            }, {
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                timeout: 10000
+            });
+
+            const data = cobaltResponse.data;
+
+            if (data.status === 'stream' || data.status === 'picker' || data.status === 'redirect') {
+                const formats = [];
+
+                if (data.status === 'picker') {
+                    for (const item of data.picker) {
+                        formats.push({
+                            url: item.url,
+                            ext: item.type || 'media',
+                            quality: item.quality || 'High',
+                            type: item.type === 'photo' ? 'image' : 'video'
+                        });
+                    }
+                } else {
+                    formats.push({
+                        url: data.url,
+                        ext: data.filename?.split('.').pop() || 'media',
+                        quality: 'Highest',
+                        type: 'video'
+                    });
+                }
+
+                return NextResponse.json({
+                    title: data.filename || "Extracted Media",
+                    thumbnail: null,
+                    url: data.url,
+                    formats: formats
+                });
+            }
+        } catch (cobaltError: any) {
+            console.log("Cobalt extraction failed, falling back to yt-dlp", cobaltError.message);
+        }
+
+        // 3. Try specialized extraction with youtube-dl
         try {
             const rawOutput = await youtubedl(url, {
                 dumpSingleJson: true,
@@ -59,7 +106,6 @@ export async function POST(req: Request) {
 
             const output: any = rawOutput;
 
-            // Filter relevant formats that have actual downloadable URLs
             const formats = output.formats
                 ?.filter((f: any) => f.url && (f.vcodec !== 'none' || f.acodec !== 'none'))
                 .map((f: any) => ({
@@ -95,7 +141,7 @@ export async function POST(req: Request) {
                 formats: uniqueFormats.slice(0, 8),
             });
         } catch (dlError) {
-            // 3. Fallback for any other valid URL
+            // 4. Fallback for any other valid URL
             return NextResponse.json({
                 title: "Generic Web Link",
                 thumbnail: null,
