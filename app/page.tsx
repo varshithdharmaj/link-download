@@ -67,7 +67,7 @@ export default function Home() {
           Download <span className="text-gradient-accent">Anything.</span>
         </h1>
         <p style={{ color: "var(--text-secondary)", fontSize: "clamp(1rem, 3vw, 1.125rem)", maxWidth: "600px", margin: "0 auto", padding: "0 1rem" }}>
-          Paste a link from YouTube, Twitter, TikTok, or any valid URL. We'll extract the media or provide a direct download instantly.
+          Paste a link from YouTube, Instagram, Facebook, Twitter, Reddit, or any valid URL. We'll extract the media or provide a direct download instantly.
         </p>
       </motion.div>
 

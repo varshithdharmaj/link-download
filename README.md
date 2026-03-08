@@ -8,7 +8,9 @@ A premium, glassmorphic web application built with [Next.js](https://nextjs.org/
 
 ## ✨ Features
 
-- **Universal Link Extraction**: Powered by the robust [Cobalt](https://cobalt.tools/) API, download media from almost any social platform instantly.
+- **Universal Media Extraction**: Powered by the robust [yt-dlp](https://github.com/yt-dlp/yt-dlp) (via `youtube-dl-exec`), download high-quality videos and images from YouTube, Instagram (Reels & Posts), Facebook, Twitter (X), TikTok, Reddit, and thousands of other sites.
+- **Direct File Detection**: Automatically identifies direct links to images, videos, and documents for instant downloading.
+- **Generic Fallback**: If a specialized extractor isn't available, we provide a direct download link for any valid URL.
 - **Premium Aesthetic**: Features a clean, airy "Light Mode" aesthetic with dynamic, animated ambient blobs shifting in soft indigo, purple, and fuchsia gradients.
 - **Glassmorphism Design**: High-end UI featuring backdrop blurs, soft shadows, and clean typography. 
 - **Micro-interactions**: Buttery-smooth mount and spring animations powered by Framer Motion.
@@ -17,10 +19,10 @@ A premium, glassmorphic web application built with [Next.js](https://nextjs.org/
 ## 🛠️ Tech Stack
 
 - **Framework**: Next.js 15 (App Router)
+- **Extraction Engine**: yt-dlp (via youtube-dl-exec)
 - **Styling**: Vanilla CSS (CSS Variables, Grid, Flexbox)
 - **Animations**: Framer Motion
 - **Icons**: Lucide React
-- **API**: Cobalt Tools API
 
 ## 💻 Getting Started
 
