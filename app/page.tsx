@@ -40,22 +40,9 @@ export default function Home() {
   };
 
   const handleDownloadFile = async (fileUrl: string, filename: string) => {
-    try {
-      const response = await fetch(fileUrl);
-      const blob = await response.blob();
-      const blobUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.download = filename || 'download';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(blobUrl);
-    } catch (err) {
-      console.error("Download failed:", err);
-      // Fallback to direct link if blob fetch fails (CORS etc)
-      window.open(fileUrl, '_blank');
-    }
+    // Use the server-side proxy to bypass CORS and force download
+    const proxyUrl = `/api/download?url=${encodeURIComponent(fileUrl)}&filename=${encodeURIComponent(filename)}`;
+    window.location.href = proxyUrl;
   };
 
   return (
@@ -333,7 +320,7 @@ export default function Home() {
         )}
       </AnimatePresence>
       <footer style={{ marginTop: "4rem", padding: "2rem", borderTop: "1px solid rgba(0,0,0,0.05)", width: "100%", textAlign: "center", color: "var(--text-secondary)", fontSize: "0.875rem" }}>
-        <p>© 2026 Media Downloader • Version 1.1.7</p>
+        <p>© 2026 Media Downloader • Version 1.1.8</p>
       </footer>
     </main>
   );
