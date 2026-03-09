@@ -60,16 +60,19 @@ export async function GET(req: Request) {
             }
         });
 
-        return new Response(stream, {
-            headers: {
-                'Content-Type': contentType,
-                'Content-Disposition': `attachment; filename="${encodeURIComponent(filename)}"`,
-                'Cache-Control': 'no-cache',
-                'Content-Length': response.headers['content-length'] || '',
-            },
+        const headers = new Headers({
+            'Content-Type': contentType,
+            'Content-Disposition': `attachment; filename="${encodeURIComponent(filename)}"`,
+            'Cache-Control': 'no-cache',
         });
+
+        if (response.headers['content-length']) {
+            headers.set('Content-Length', response.headers['content-length']);
+        }
+
+        return new Response(stream, { headers });
     } catch (error: any) {
         console.error("Proxy error:", error.message);
-        return Response.redirect(url);
+        return NextResponse.redirect(new URL(url));
     }
 }
