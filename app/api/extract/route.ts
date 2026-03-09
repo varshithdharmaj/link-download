@@ -141,18 +141,8 @@ export async function POST(req: Request) {
                 formats: uniqueFormats.slice(0, 8),
             });
         } catch (dlError) {
-            // 4. Fallback for any other valid URL
-            return NextResponse.json({
-                title: "Generic Web Link",
-                thumbnail: null,
-                url: url,
-                formats: [{
-                    url: url,
-                    ext: "link",
-                    quality: "Direct Download",
-                    type: "file"
-                }]
-            });
+            // 4. If all methods fail, the link is likely unsupported, private, or requires login
+            throw new Error("Could not extract media. The link might be unsupported, private (like an Instagram Story), or requires login.");
         }
     } catch (error: any) {
         console.error("Extraction error:", error.message || error);
