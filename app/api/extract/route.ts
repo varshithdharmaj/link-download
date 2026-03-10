@@ -96,13 +96,24 @@ export async function POST(req: Request) {
 
         // 3. Try specialized extraction with youtube-dl
         try {
-            const rawOutput = await youtubedl(url, {
+            const ytDlpOptions: any = {
                 dumpSingleJson: true,
                 noWarnings: true,
                 noCallHome: true,
                 preferFreeFormats: true,
                 youtubeSkipDashManifest: true,
-            } as any);
+            };
+
+            // Inject Instagram Authentication Cookie if provided
+            if (url.includes('instagram.com') && process.env.IG_SESSION_ID) {
+                ytDlpOptions.addHeader = [
+                    `Cookie: sessionid=${process.env.IG_SESSION_ID}`,
+                    'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
+                ];
+                console.log("Using Authenticated IG Cookie Session");
+            }
+
+            const rawOutput = await youtubedl(url, ytDlpOptions);
 
             const output: any = rawOutput;
 
