@@ -194,9 +194,12 @@ export default function Home() {
 
               const isVideo = !!videoFormat || result.type === 'video';
               const isAudio = !!audioFormat || result.type === 'audio';
-              const previewUrl = videoFormat?.url || audioFormat?.url || result.url;
+              const rawPreviewUrl = videoFormat?.url || audioFormat?.url || result.url;
+              
+              // Use the preview proxy for better CORS handling and range support
+              const previewUrl = rawPreviewUrl ? `/api/download?url=${encodeURIComponent(rawPreviewUrl)}&mode=preview` : null;
 
-              if (isVideo) {
+              if (isVideo && previewUrl) {
                 return (
                   <div style={{ width: "100%", padding: "1.5rem 2rem 0" }}>
                     <h4 style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", color: "var(--text-secondary)", marginBottom: "0.75rem" }}>Video Preview</h4>
@@ -206,6 +209,7 @@ export default function Home() {
                       style={{ width: "100%", borderRadius: "12px", background: "#000", maxHeight: "400px", boxShadow: "0 8px 32px rgba(0,0,0,0.2)" }}
                       poster={result.thumbnail}
                       key={previewUrl}
+                      preload="metadata"
                     >
                       <source src={previewUrl} />
                       Your browser does not support the video tag.
@@ -214,7 +218,7 @@ export default function Home() {
                 );
               }
 
-              if (isAudio) {
+              if (isAudio && previewUrl) {
                 return (
                   <div style={{ width: "100%", padding: "1.5rem 2rem 0" }}>
                     <h4 style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", color: "var(--text-secondary)", marginBottom: "0.75rem" }}>Audio Preview</h4>
@@ -222,6 +226,7 @@ export default function Home() {
                       controls
                       style={{ width: "100%" }}
                       key={previewUrl}
+                      preload="metadata"
                     >
                       <source src={previewUrl} />
                       Your browser does not support the audio element.
